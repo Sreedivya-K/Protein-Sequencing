@@ -17,7 +17,15 @@ Parameters: str
 Returns: str
 '''
 def readFile(filename):
-    return
+    openFile=open(filename,"r")
+    text = openFile.read()
+    lines=text.splitlines()
+    DNA=""
+    for i in range(len(lines)):
+        DNA+=lines[i]
+    return DNA
+
+    
 
 
 '''
