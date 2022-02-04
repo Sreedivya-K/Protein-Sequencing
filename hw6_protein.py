@@ -97,19 +97,25 @@ Returns: 2D list of strs
 '''
 def synthesizeProteins(dnaFilename, codonFilename):
     dna=readFile(dnaFilename)
+    print(len(dna))
     codonDict=makeCodonDictionary(codonFilename)
     proteins=[]
     startValue=0
+    totalMissingbases=0
     while(startValue<len(dna)):
         dnaStr=dna[startValue:]
         dnaStartIndex=dnaStr.find("ATG")
         if (dnaStartIndex<0):
             break
-        rnaStrand=dnaToRna(dnaStr, dnaStartIndex)
-        protein=generateProtein(rnaStrand,codonDict)    
+        rnaStrand=dnaToRna(dnaStr, dnaStartIndex)     
+        protein=generateProtein(rnaStrand,codonDict)     
         proteins.append(protein)
+        totalMissingbases=totalMissingbases+dnaStartIndex
         startValue+=3*len(protein)+dnaStartIndex
+    totalMissingbases=totalMissingbases+len(dna)-startValue
+    
     print(len(proteins))
+    print(totalMissingbases) 
     return proteins
 
    
@@ -193,13 +199,10 @@ def findAminoAcidDifferences(proteinList1, proteinList2, cutoff):
         if amino not in aminoDict2:
             aminoDict2[amino]=0.0
         aminoDict1[amino]/=count1
-           
     for amino in aminoDict2:
         if amino not in aminoDict1:
             aminoDict1[amino]=0.0
         aminoDict2[amino]/=count2  
-           
-   
     for aminoAcid in aminoDict1:
         if aminoAcid not in["Start","Stop"]:
                 freq1= aminoDict1[aminoAcid]
@@ -350,7 +353,19 @@ Parameters: no parameters
 Returns: None
 '''
 def runFullProgram():
+    humanProteins=synthesizeProteins("data/human_p53.txt", "data/codon_table.json")
+    elephantProteins=synthesizeProteins("data/elephant_p53.txt", "data/codon_table.json")
+    commonalities=commonProteins(humanProteins,elephantProteins)
+    differences=findAminoAcidDifferences(humanProteins,elephantProteins,0.005)
+    displayTextResults(commonalities,differences)
+    distinctAminoAcids=makeAminoAcidLabels(humanProteins,elephantProteins)
+    humanFreqs=setupChartData(distinctAminoAcids,humanProteins)
+    elephantFreqs=setupChartData(distinctAminoAcids,elephantProteins)
+    edges=makeEdgeList(distinctAminoAcids,differences)
+    createChart(distinctAminoAcids, humanFreqs, "Human", elephantFreqs, "Elephant", edgeList=edges)
     return
+
+    
 
 
 ### RUN CODE ###
@@ -358,14 +373,14 @@ def runFullProgram():
 # This code runs the test cases to check your work
 if __name__ == "__main__":
     # print("\n" + "#"*15 + " WEEK 1 TESTS " +  "#" * 16 + "\n")
-    # test.week1Tests()
+    test.week1Tests()
     # print("\n" + "#"*15 + " WEEK 1 OUTPUT " + "#" * 15 + "\n")
     # runWeek1()
 
     ## Uncomment these for Week 2 ##
     
     # print("\n" + "#"*15 + " WEEK 2 TESTS " +  "#" * 16 + "\n")
-    # test.week2Tests()
+    test.week2Tests()
     # print("\n" + "#"*15 + " WEEK 2 OUTPUT " + "#" * 15 + "\n")
     # runWeek2()
    
